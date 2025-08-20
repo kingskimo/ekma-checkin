@@ -5,113 +5,95 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>EKMA Admin Dashboard</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-    body { background: #f5f5f5; color: #333; }
-    .container { max-width: 800px; margin: 40px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    h1, h2 { color: #800080; }
-    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-    th { background: #800080; color: white; padding: 10px; text-align: left; }
-    td { padding: 10px; border-bottom: 1px solid #ddd; }
-    tr:hover { background: #f1f1f1; }
-    button { background: #800080; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin: 10px 0; }
-    .login { text-align: center; margin: 50px; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    body {
+      background: #f7f7f7;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+    h1 {
+      color: #800080;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .login {
+      text-align: center;
+      margin: 50px 0;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    button {
+      background: #800080;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin: 10px 0;
+    }
+    button:hover {
+      background: #6a006a;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th {
+      background: #800080;
+      color: white;
+      padding: 12px;
+      text-align: left;
+    }
+    td {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    tr:hover {
+      background: #f1f1f1;
+    }
+    #dashboard {
+      display: none;
+    }
   </style>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-  <script>
-    
-const firebaseConfig = {
-  apiKey: "AIzaSyCVdOI4tuix2j9n9zeHi20eaGPYSYMdIQY",
-  authDomain: "ekma-visitors-backend.firebaseapp.com",
-  projectId: "ekma-visitors-backend",
-  storageBucket: "ekma-visitors-backend.firebasestorage.app",
-  messagingSenderId: "10430601739",
-  appId: "1:10430601739:web:2b9da46db069cf0010050e"
-};
-const app = initializeApp(firebaseConfig);
-    const firebaseConfig = { /* same as above */ };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const auth = firebase.auth();
-
-    let visitors = [];
-
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        document.getElementById("login").style.display = "none";
-        document.getElementById("dashboard").style.display = "block";
-        loadVisitors();
-      } else {
-        document.getElementById("login").style.display = "block";
-        document.getElementById("dashboard").style.display = "none";
-      }
-    });
-
-     function signIn() {
-  const email = document.getElementById("email").value;
-  const password = document.getElementById("password").value;
-
-  auth.signInWithEmailAndPassword(email, password)
-    .then(() => {
-      alert("Login successful!");
-    })
-    .catch(error => {
-      alert("Error: " + error.message);
-    });
-}
-    }
-
-    function signOut() {
-      auth.signOut();
-    }
-
-    function loadVisitors() {
-      db.collection("visitors")
-        .orderBy("timestamp", "desc")
-        .onSnapshot(snap => {
-          visitors = [];
-          const tbody = document.getElementById("visitorsList");
-          tbody.innerHTML = "";
-          snap.forEach(doc => {
-            const v = doc.data();
-            visitors.push(v);
-            const tr = document.createElement("tr");
-            tr.innerHTML = `<td>${v.name}</td><td>${v.purpose}</td><td>${v.phone}</td><td>${v.date} ${v.time}</td>`;
-            tbody.appendChild(tr);
-          });
-        });
-    }
-
-    function exportToCSV() {
-      let csv = "Name,Purpose,Phone,Date & Time\n";
-      visitors.forEach(v => {
-        csv += `"${v.name}","${v.purpose}","${v.phone}","${v.date} ${v.time}"\n`;
-      });
-      const blob = new Blob([csv], { type: "text/csv" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `ekma-visitors-${new Date().toISOString().slice(0,10)}.csv`;
-      a.click();
-    }
-  </script>
 </head>
 <body>
   <div class="container">
     <h1>EKMA Admin Dashboard</h1>
 
+    <!-- Login Section -->
     <div id="login" class="login">
-      <h2>Login</h2>
-      <input type="email" id="email" placeholder="Email" /><br><br>
-      <input type="password" id="password" placeholder="Password" /><br><br>
+      <h2>Admin Login</h2>
+      <input type="email" id="email" placeholder="Your Email" />
+      <input type="password" id="password" placeholder="Password" />
       <button onclick="signIn()">Sign In</button>
     </div>
 
-    <div id="dashboard" style="display:none;">
-      <h2>Recent Visitors</h2>
-      <button onclick="exportToCSV()">Export to CSV</button>
+    <!-- Dashboard -->
+    <div id="dashboard">
+      <button onclick="exportToCSV()" style="background: #b8860b;">Export to CSV</button>
       <button onclick="signOut()" style="background: #d32f2f;">Sign Out</button>
+
+      <h2 style="margin: 20px 0; color: #800080;">Visitor Records</h2>
       <table>
         <thead>
           <tr>
@@ -125,8 +107,92 @@ const app = initializeApp(firebaseConfig);
       </table>
     </div>
   </div>
-</body>
 
-</html>
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+    import { getFirestore, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCVdOI4tuix2j9n9zeHi20eaGPYSYMdIQY",
+      authDomain: "ekma-visitors-backend.firebaseapp.com",
+      projectId: "ekma-visitors-backend",
+      storageBucket: "ekma-visitors-backend.firebasestorage.app",
+      messagingSenderId: "10430601739",
+      appId: "1:10430601739:web:2b9da46db069cf0010050e"
+    };
 
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getFirestore();
+
+    // DOM Elements
+    const loginSection = document.getElementById("login");
+    const dashboard = document.getElementById("dashboard");
+
+    // Check Auth State
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        loginSection.style.display = "none";
+        dashboard.style.display = "block";
+        loadVisitors();
+      } else {
+        loginSection.style.display = "block";
+        dashboard.style.display = "none";
+      }
+    });
+
+    // Sign In
+    window.signIn = () => {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then(() => {
+          alert("Login successful!");
+        })
+        .catch((error) => {
+          alert("Error: " + error.message);
+        });
+    };
+
+    // Sign Out
+    window.signOut = () => {
+      signOut(auth).then(() => {
+        alert("Signed out!");
+      });
+    };
+
+    // Load Visitors
+    function loadVisitors() {
+      const visitorsList = document.getElementById("visitorsList");
+      visitorsList.innerHTML = "";
+
+      onSnapshot(collection(db, "visitors"), (snapshot) => {
+        visitorsList.innerHTML = "";
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${data.name}</td>
+            <td>${data.purpose}</td>
+            <td>${data.phone}</td>
+            <td>${data.date} ${data.time}</td>
+          `;
+          visitorsList.appendChild(tr);
+        });
+      });
+    }
+
+    // Export to CSV
+    window.exportToCSV = () => {
+      let csv = "Name,Purpose,Phone,Date & Time\n";
+      const rows = document.querySelectorAll("#visitorsList tr");
+      rows.forEach(row => {
+        const cells = row.querySelectorAll("td");
+        const rowData = Array.from(cells).map(cell => `"${cell.innerText}"`).join(",");
+        csv += rowData + "\n";
