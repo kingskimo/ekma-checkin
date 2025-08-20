@@ -1,25 +1,80 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
-<script src="script.js" defer></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>EKMA Visitor Check-In</title>
-  <link rel="stylesheet" href="style.css" />
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
-  <script src="firebase-config.js"></script>
-  <script src="script.js" defer></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    body {
+      background: #f7f7f7;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    header h1 {
+      color: #800080;
+      margin-bottom: 5px;
+    }
+    .subtext {
+      color: #b8860b;
+      font-weight: 600;
+    }
+    .form-group {
+      margin: 18px 0;
+      text-align: left;
+    }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: #800080;
+      font-weight: 600;
+    }
+    input, select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+    }
+    button {
+      background: #800080;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-top: 10px;
+      width: 100%;
+    }
+    .alert {
+      margin: 15px 0;
+      padding: 12px;
+      background: #e8f5e9;
+      color: #2e7d32;
+      border-radius: 6px;
+      display: none;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
     <header>
       <h1>Effia-Kwesimintsim Municipal Assembly</h1>
-      <p>Visitor Check-In System</p>
+      <p class="subtext">Visitor Check-In System</p>
     </header>
 
     <form id="checkInForm">
@@ -54,6 +109,60 @@
 
     <div id="alert" class="alert">You have checked in successfully!</div>
   </div>
-</body>
 
+  <!-- Firebase Script -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js';
+    import { getFirestore, collection, addDoc } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js';
+
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyCVdOI4tuix2j9n9zeHi20eaGPYSYMdIQY",
+      authDomain: "ekma-visitors-backend.firebaseapp.com",
+      projectId: "ekma-visitors-backend",
+      storageBucket: "ekma-visitors-backend.firebasestorage.app",
+      messagingSenderId: "10430601739",
+      appId: "1:10430601739:web:2b9da46db069cf0010050e"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Set today's date
+    document.getElementById('date').valueAsDate = new Date();
+
+    // Form submission
+    document.getElementById('checkInForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const name = document.getElementById('fullName').value;
+      const purpose = document.getElementById('purpose').value;
+      const phone = document.getElementById('phone').value;
+      const date = document.getElementById('date').value;
+      const time = new Date().toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+
+      try {
+        await addDoc(collection(db, 'visitors'), {
+          name, purpose, phone, date, time,
+          timestamp: Date.now()
+        });
+
+        // Show success
+        const alert = document.getElementById('alert');
+        alert.style.display = 'block';
+        setTimeout(() => alert.style.display = 'none', 3000);
+
+        // Reset form
+        e.target.reset();
+        document.getElementById('date').valueAsDate = new Date();
+      } catch (error) {
+        alert('Error saving data: ' + error.message);
+      }
+    });
+  </script>
+</body>
 </html>
