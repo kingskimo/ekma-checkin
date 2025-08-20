@@ -80,10 +80,10 @@
   <div class="container">
     <h1>EKMA Admin Dashboard</h1>
 
-    <!-- Login Section -->
+    <!-- Login -->
     <div id="login" class="login">
       <h2>Admin Login</h2>
-      <input type="email" id="email" placeholder="Your Email" />
+      <input type="email" id="email" placeholder="Email" />
       <input type="password" id="password" placeholder="Password" />
       <button onclick="signIn()">Sign In</button>
     </div>
@@ -108,14 +108,13 @@
     </div>
   </div>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase Script -->
   <script type="module">
-    // Import Firebase
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
-    import { getFirestore, collection, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js';
+    import { getFirestore, collection, onSnapshot } from 'https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js';
 
-    // Your Firebase config
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyCVdOI4tuix2j9n9zeHi20eaGPYSYMdIQY",
       authDomain: "ekma-visitors-backend.firebaseapp.com",
@@ -125,58 +124,57 @@
       appId: "1:10430601739:web:2b9da46db069cf0010050e"
     };
 
-    // Initialize Firebase
+    // Initialize
     const app = initializeApp(firebaseConfig);
     const auth = getAuth();
     const db = getFirestore();
 
-    // DOM Elements
-    const loginSection = document.getElementById("login");
-    const dashboard = document.getElementById("dashboard");
+    const loginSection = document.getElementById('login');
+    const dashboard = document.getElementById('dashboard');
 
-    // Check Auth State
+    // Check auth state
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        loginSection.style.display = "none";
-        dashboard.style.display = "block";
+        loginSection.style.display = 'none';
+        dashboard.style.display = 'block';
         loadVisitors();
       } else {
-        loginSection.style.display = "block";
-        dashboard.style.display = "none";
+        loginSection.style.display = 'block';
+        dashboard.style.display = 'none';
       }
     });
 
     // Sign In
     window.signIn = () => {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
 
       signInWithEmailAndPassword(auth, email, password)
         .then(() => {
-          alert("Login successful!");
+          alert('Login successful!');
         })
-        .catch((error) => {
-          alert("Error: " + error.message);
+        .catch(error => {
+          alert('Error: ' + error.message);
         });
     };
 
     // Sign Out
     window.signOut = () => {
       signOut(auth).then(() => {
-        alert("Signed out!");
+        alert('Signed out!');
       });
     };
 
     // Load Visitors
     function loadVisitors() {
-      const visitorsList = document.getElementById("visitorsList");
-      visitorsList.innerHTML = "";
+      const visitorsList = document.getElementById('visitorsList');
+      visitorsList.innerHTML = '';
 
-      onSnapshot(collection(db, "visitors"), (snapshot) => {
-        visitorsList.innerHTML = "";
+      onSnapshot(collection(db, 'visitors'), (snapshot) => {
+        visitorsList.innerHTML = '';
         snapshot.forEach((doc) => {
           const data = doc.data();
-          const tr = document.createElement("tr");
+          const tr = document.createElement('tr');
           tr.innerHTML = `
             <td>${data.name}</td>
             <td>${data.purpose}</td>
@@ -190,9 +188,21 @@
 
     // Export to CSV
     window.exportToCSV = () => {
-      let csv = "Name,Purpose,Phone,Date & Time\n";
-      const rows = document.querySelectorAll("#visitorsList tr");
+      let csv = 'Name,Purpose,Phone,Date & Time\n';
+      const rows = document.querySelectorAll('#visitorsList tr');
       rows.forEach(row => {
-        const cells = row.querySelectorAll("td");
-        const rowData = Array.from(cells).map(cell => `"${cell.innerText}"`).join(",");
-        csv += rowData + "\n";
+        const cells = row.querySelectorAll('td');
+        const rowData = Array.from(cells).map(cell => `"${cell.innerText}"`).join(',');
+        csv += rowData + '\n';
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ekma-visitors-${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+    };
+  </script>
+</body>
+</html>
