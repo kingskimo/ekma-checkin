@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EKMA Admin Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+    body { background: #f5f5f5; color: #333; }
+    .container { max-width: 800px; margin: 40px auto; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    h1, h2 { color: #800080; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th { background: #800080; color: white; padding: 10px; text-align: left; }
+    td { padding: 10px; border-bottom: 1px solid #ddd; }
+    tr:hover { background: #f1f1f1; }
+    button { background: #800080; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; margin: 10px 0; }
+    .login { text-align: center; margin: 50px; }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore-compat.js"></script>
+  <script>
+    // Paste your firebaseConfig here
+    const firebaseConfig = { /* same as above */ };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    let visitors = [];
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        document.getElementById("login").style.display = "none";
+        document.getElementById("dashboard").style.display = "block";
+        loadVisitors();
+      } else {
+        document.getElementById("login").style.display = "block";
+        document.getElementById("dashboard").style.display = "none";
+      }
+    });
+
+    function signIn() {
+      const email = document.getElementById("email").value;
+      const password = document.getElementById("password").value;
+      auth.signInWithEmailAndPassword(email, password)
+        .catch(err => alert("Error: " + err.message));
+    }
+
+    function signOut() {
+      auth.signOut();
+    }
+
+    function loadVisitors() {
+      db.collection("visitors")
+        .orderBy("timestamp", "desc")
+        .onSnapshot(snap => {
+          visitors = [];
+          const tbody = document.getElementById("visitorsList");
+          tbody.innerHTML = "";
+          snap.forEach(doc => {
+            const v = doc.data();
+            visitors.push(v);
+            const tr = document.createElement("tr");
+            tr.innerHTML = `<td>${v.name}</td><td>${v.purpose}</td><td>${v.phone}</td><td>${v.date} ${v.time}</td>`;
+            tbody.appendChild(tr);
+          });
+        });
+    }
+
+    function exportToCSV() {
+      let csv = "Name,Purpose,Phone,Date & Time\n";
+      visitors.forEach(v => {
+        csv += `"${v.name}","${v.purpose}","${v.phone}","${v.date} ${v.time}"\n`;
+      });
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ekma-visitors-${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+    }
+  </script>
+</head>
+<body>
+  <div class="container">
+    <h1>EKMA Admin Dashboard</h1>
+
+    <div id="login" class="login">
+      <h2>Login</h2>
+      <input type="email" id="email" placeholder="Email" /><br><br>
+      <input type="password" id="password" placeholder="Password" /><br><br>
+      <button onclick="signIn()">Sign In</button>
+    </div>
+
+    <div id="dashboard" style="display:none;">
+      <h2>Recent Visitors</h2>
+      <button onclick="exportToCSV()">Export to CSV</button>
+      <button onclick="signOut()" style="background: #d32f2f;">Sign Out</button>
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Purpose</th>
+            <th>Phone</th>
+            <th>Date & Time</th>
+          </tr>
+        </thead>
+        <tbody id="visitorsList"></tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>
